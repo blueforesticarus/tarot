@@ -60,11 +60,10 @@ display = {
     "cups": "Cups",
 }
 
-css_image_mode = True
 
 imgn = 1
-css_ls = []
-def gen_image(path):
+css_ls = {}
+def gen_image(path, group='main', css_image_mode = True):
     global css_ls, imgn
     import base64
 
@@ -73,11 +72,14 @@ def gen_image(path):
     data_base64 = data_base64.decode()    # convert bytes to string
 
     if not css_image_mode:
-        html = '<img class="card" src="data:image/png;base64,' + data_base64 + '">' # embed in html
+        html = '<img class="card" src="data:image/jpeg;base64,' + data_base64 + '">' # embed in html
     else:
-        html = '<img class="card img_' + str(imgn) + '">'
-        css = "img.img_" + str(imgn) + " { content: url(data:image/png;base64," + data_base64 + "); }"
-        css_ls.append(css)
+        if group not in css_ls:
+            css_ls[group] = []
+
+        html = '<img class="card" id="img_' + group + "_" + str(imgn) + '">'
+        css = "img#img_" + group + "_" + str(imgn) + " { content: url(data:image/png;base64," + data_base64 + "); }"
+        css_ls[group].append(css)
 
     imgn +=1
     return html
@@ -115,6 +117,7 @@ class column():
             for f in os.listdir(self.path):
                 ext = f.split('.')[1]
                 path = self.path + "/" + f
+                fn = f.split('.')[0]
                 if ext == 'txt':
                     with open(path, 'r') as fp:
                         txt = fp.read()
@@ -123,10 +126,15 @@ class column():
                     <p class=text>{}</p>
                     '''
                     inner = temp_txt.format(txt)
+                elif ext == "jpg":
+                    if "_" in fn:
+                        nm = self.name + "_" + fn.split("_")[1]
+                    else:
+                        nm = self.name + "_trump"
+                    inner = gen_image(path, nm)
                 else:
-                    inner = gen_image(path)
+                    continue;
 
-                fn = f.split('.')[0]
                 self.dict[fn] = inner
                 #print(path,fn)
 
@@ -201,10 +209,25 @@ def generate(ls):
             pn += 1
         sn += 1
 
-    return temp_html.format(rows="\n".join(trs), links = "\n".join(links), imgs="\n".join(css_ls))
+    css_txt = {}
+    css_links = ""
+    css_total = ""
+    for key in css_ls:
+        css_txt[key] = "\n".join(css_ls[key])
+        css_links += '<link rel="stylesheet" href="{}.css">'.format(key)
+        css_total += '<style>' + css_txt[key]+ "</style>"
+
+    total = temp_html.format(rows="\n".join(trs), links = "\n".join(links), imgs=css_total )
+    index = temp_html.format(rows="\n".join(trs), links = "\n".join(links), imgs=css_links )
+
+    with open('build/total.html', 'w') as f:
+        f.write(total)
+    with open('build/index.html', 'w') as f:
+        f.write(index)
+    for k, v in css_txt.items():
+        with open('build/'+k+".css", 'w') as f:
+            f.write(v)
 
 ls = os.listdir("columns")
-html = generate(ls)
-with open('build/index.html', 'w') as f:
-    f.write(html)
+generate(ls)
 
