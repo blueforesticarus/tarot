@@ -1,0 +1,238 @@
+<html>
+    <style id="sizer_style">
+        .main img.card {{
+            height:20em;
+        }}
+    </style>
+    <script>
+        function toggle(name, evt){{
+            body = document.body
+            if(evt.checked){{
+                body.setAttribute(name, "true")
+            }}else{{
+                body.removeAttribute(name)
+            }}
+        }}
+
+        function sizer(evt){{
+            n = Number(evt.value)
+            if ( !(n>4 && n< 50) ){{
+                evt.value = 25
+            }}
+            st = ".main img.card {{ height: " + evt.value + "em; }}"
+            document.getElementById('sizer_style').innerHTML = st
+        }}
+
+
+        function resort(evt){{
+            if(! evt.checked){{
+                sortTable('sorta')
+            }}else{{
+                sortTable('sortb')
+            }}
+        }}
+
+        function sortTable(att) {{
+            var table, rows, i, x, y;
+            table = document.getElementById("mt");
+            
+            while (true) {{
+                rows = table.rows;
+                
+                /* Loop through all table rows (except the
+                first, which contains table headers): */
+                for (i = 1; i < (rows.length - 1); i++) {{
+                    /* Get the two elements you want to compare,
+                    one from current row and one from the next: */
+                    x = Number( rows[i].getAttribute(att) )
+                    y = Number( rows[i + 1].getAttribute(att) )
+
+                    if (x > y) {{
+                        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                        break;
+                    }}
+                }}
+
+                if( ! ( x > y ) ){{
+                    break;
+                }}
+            }}
+        }}
+    </script>
+    <style>
+        body {{
+            margin:0;
+        }}
+        .content {{
+            position: fixed;
+            height: 100%;
+            width:100%;
+            display: flex;
+            flex-direction: column;
+        }}
+        .horizontal {{
+            display: flex;
+            min-height: 0;
+        }}
+
+        .topnav {{
+            display:flex;
+            margin: 1 0 3 0;
+        }}
+        
+        .topnav .inner {{
+            display: flex;
+            justify-content: space-around;
+            flex: 1;
+        }}
+        .topnav input#sizer {{
+            font-size: 10;
+            width: 3em;
+            height: 2em;
+        }}
+
+        .sidenav {{
+            overflow-y: auto;
+        }}
+        .main {{
+            overflow-y: auto;
+            flex: 1;
+        }}
+
+
+        .sidenav li a {{
+            color:inherit;
+        }}
+        .sidenav li div{{
+            padding: 1 10;
+            text-align: right;
+        }}
+        .sidenav ul {{
+            list-style-type: none; /* Remove bullets */
+            padding:0;
+        }}
+
+        .sidenav .wands {{
+            //background-color: red;
+            color:darkred;
+        }}
+        .sidenav .swords {{
+            //background-color: yellow;
+            color:darkgoldenrod;
+        }}
+        .sidenav .coins {{
+            //background-color: green;
+            color:darkgreen;
+        }}
+        .sidenav .cups {{
+            //background-color: blue;
+            color:darkblue;
+        }}
+        .sidenav .trumps {{
+            //background-color: white;
+            color:grey;
+        }}
+
+        .main td {{
+            border: 1px solid black;
+            padding: 10 10;
+        }}
+        .main td.head {{
+            text-align: center;
+        }}
+
+        .main table {{
+            border-collapse: collapse;
+        }}
+
+        body[sidenav] .sidenav {{
+            display: none;
+        }}
+
+    .img_thoth img {{
+        box-sizing: border-box;
+        padding: 5%;
+    }}
+
+    .img_fuego img {{
+        box-sizing: border-box;
+        padding: 4% 6% 6% 6%;
+    }}
+
+    </style>
+    <body>
+        <div class="content">
+            <div class="topnav">
+                <span class="input"><input type="checkbox" onclick="toggle('sidenav', this)"></span>
+                <span class="input"><input type="checkbox" onclick="resort(this)"></span>
+                |
+                <span class="inner">
+                <span>
+                    <a href="1">A</a>
+                    <a href="2">2</a>
+                    <a href="3">3</a>
+                    <a href="4">4</a>
+                    <a href="5">5</a>
+                    <a href="6">6</a>
+                    <a href="7">7</a>
+                    <a href="8">8</a>
+                    <a href="9">9</a>
+                    <a href="10">10</a>
+                    <a href="page">Pa</a>
+                    <a href="knight">Kn</a>
+                    <a href="queen">Qu</a>
+                    <a href="king">Ki</a>
+                </span>
+                |
+                <span>
+                <a href="wands">wands</a>
+                <a href="swords">swords</a>
+                <a href="cups">cups</a>
+                <a href="coins">coins</a>
+                </span>
+                |
+                <span>
+                <a href="#F">F</a>
+                <a href="#I">I</a>
+                <a href="#II">II</a>
+                <a href="#III">III</a>
+                <a href="#IV">IV</a>
+                <a href="#V">V</a>
+                <a href="#VI">VI</a>
+                <a href="#VII">VII</a>
+                <a href="#VIII">VIII</a>
+                <a href="#IX">IX</a>
+                <a href="#X">X</a>
+                <a href="#XI">XI</a>
+                <a href="#XII">XII</a>
+                <a href="#XIII">XIII</a>
+                <a href="#XIV">XIV</a>
+                <a href="#XV">XV</a>
+                <a href="#XVI">XVI</a>
+                <a href="#XVII">XVII</a>
+                <a href="#XVIII">XVIII</a>
+                <a href="#XIX">XIX</a>
+                <a href="#XX">XX</a>
+                <a href="#XXI">XXI</a>
+                </span>
+                </span>
+                <span class="input"><input id="sizer" value="20" type="text" onchange="sizer(this)"></span>
+            </div>
+            <div class='horizontal'>
+                <div class="sidenav">
+                    <ul>
+                        {links}
+                    </ul>
+                </div>
+                <div class="main">
+                    <table id="mt">
+                        {rows}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </body>
+    <style>
+        {imgs}
+    </style>
+</html>
