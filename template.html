@@ -5,6 +5,17 @@
         }}
     </style>
     <script>
+        document.addEventListener('readystatechange', event => {{
+            // When HTML/DOM elements are ready:
+            if (event.target.readyState === "interactive") {{
+                //no real effect
+            }}
+
+            // When window loaded ( external resources are loaded too- `css`,`src`, etc...) 
+            if (event.target.readyState === "complete") {{
+                document.getElementById("onload").innerHTML = "LOADED"
+            }}
+        }});
         function toggle(name, evt){{
             body = document.body
             if(evt.checked){{
@@ -98,6 +109,14 @@
             overflow-y: auto;
             flex: 1;
         }}
+        .main td.deck {{
+            border-left-style: none;
+            border-right-style: none;
+            padding:1;
+        }}
+        .main td.deck:last-child {{
+            border-right-style: solid;
+        }}
 
 
         .sidenav li a {{
@@ -135,7 +154,7 @@
 
         .main td {{
             border: 1px solid black;
-            padding: 10 10;
+            padding: 0 10;
         }}
         .main td.head {{
             text-align: center;
@@ -143,20 +162,20 @@
 
         .main table {{
             border-collapse: collapse;
+            margin:5px;
         }}
 
         body[sidenav] .sidenav {{
             display: none;
         }}
 
-    .img_thoth img {{
+    .img_thoth img , .img_marseilles img, .img_fuego img {{
         box-sizing: border-box;
-        padding: 5%;
+        padding: 5% 0;
     }}
 
-    .img_fuego img {{
-        box-sizing: border-box;
-        padding: 4% 6% 6% 6%;
+    .main #top {{
+        text-align: center;
     }}
 
     </style>
@@ -168,27 +187,27 @@
                 |
                 <span class="inner">
                 <span>
-                    <a href="1">A</a>
-                    <a href="2">2</a>
-                    <a href="3">3</a>
-                    <a href="4">4</a>
-                    <a href="5">5</a>
-                    <a href="6">6</a>
-                    <a href="7">7</a>
-                    <a href="8">8</a>
-                    <a href="9">9</a>
-                    <a href="10">10</a>
-                    <a href="page">Pa</a>
-                    <a href="knight">Kn</a>
-                    <a href="queen">Qu</a>
-                    <a href="king">Ki</a>
+                    <a href="#c1">A</a>
+                    <a href="#c2">2</a>
+                    <a href="#c3">3</a>
+                    <a href="#c4">4</a>
+                    <a href="#c5">5</a>
+                    <a href="#c6">6</a>
+                    <a href="#c7">7</a>
+                    <a href="#c8">8</a>
+                    <a href="#c9">9</a>
+                    <a href="#c10">10</a>
+                    <a href="#page">Pa</a>
+                    <a href="#knight">Kn</a>
+                    <a href="#queen">Qu</a>
+                    <a href="#king">Ki</a>
                 </span>
                 |
                 <span>
-                <a href="wands">wands</a>
-                <a href="swords">swords</a>
-                <a href="cups">cups</a>
-                <a href="coins">coins</a>
+                <a href="#wands">wands</a>
+                <a href="#swords">swords</a>
+                <a href="#cups">cups</a>
+                <a href="#coins">coins</a>
                 </span>
                 |
                 <span>
@@ -213,7 +232,7 @@
                 <a href="#XVIII">XVIII</a>
                 <a href="#XIX">XIX</a>
                 <a href="#XX">XX</a>
-                <a href="#XXI">XXI</a>
+                <a title="The World" href="#XXI">XXI</a>
                 </span>
                 </span>
                 <span class="input"><input id="sizer" value="20" type="text" onchange="sizer(this)"></span>
@@ -225,6 +244,10 @@
                     </ul>
                 </div>
                 <div class="main">
+                    <div id="top">
+                        <h1>TAROT</h1>
+                        <div id="onload">loading...</div>
+                    </div>
                     <table id="mt">
                         {rows}
                     </table>

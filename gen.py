@@ -1,5 +1,5 @@
-with open('template.html', 'r') as f:
-    temp_html = f.read()
+output_split = True
+output_total = True
 
 temp_tr = '''
 <tr sortA="{sortA}" sortB="{sortB}" id="{id}" class="{cls}" >
@@ -7,14 +7,11 @@ temp_tr = '''
 </tr>
 '''
 
-temp_td = '''
-<td class="{name}" >
-    {inner}
-</td>
-'''
+suits = ["wands", "swords", "cups", "coins"]
+ranks = ["c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8", "c9", "c10"]
+court = ["page", "knight", "queen", "king"]
+pips = ranks + court
 
-suits =  ["wands", "swords", "cups", "coins"]
-pips  =  ["c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8", "c9", "c10", "page", "knight", "queen", "king"]
 trumps = ["F", "I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX","XXI"]
 
 display = {
@@ -54,180 +51,227 @@ display = {
     "knight": "Knight",
     "queen": "Queen",
     "king": "King",
+
     "wands": "Wands",
     "swords": "Swords",
     "coins": "Coins",
     "cups": "Cups",
 }
 
-
-imgn = 1
-css_ls = {}
-def gen_image(path, group='main', css_image_mode = True):
-    global css_ls, imgn
-    import base64
-
-    data = open(path, 'rb').read() # read bytes from file
-    data_base64 = base64.b64encode(data)  # encode to base64 (bytes)
-    data_base64 = data_base64.decode()    # convert bytes to string
-
-    if not css_image_mode:
-        html = '<img class="card" src="data:image/jpeg;base64,' + data_base64 + '">' # embed in html
-    else:
-        if group not in css_ls:
-            css_ls[group] = []
-
-        html = '<img class="card" id="img_' + group + "_" + str(imgn) + '">'
-        css = "img#img_" + group + "_" + str(imgn) + " { content: url(data:image/png;base64," + data_base64 + "); }"
-        css_ls[group].append(css)
-
-    imgn +=1
-    return html
-        
-
 with open('ORDER','r') as f:
     order = f.read().split('\n')
 
 import os, sys
-class column():
+class Column():
     def __init__(self, path):
         self.path = "columns/" + path
         self.name = path
 
         assert os.path.exists(self.path), path
 
-        self.dict = {}
-        self.index = order.index(self.name)
+        self.html = {}
+        self.css  = {}
+
+        self.is_image = "img_" in self.name
 
         if os.path.isfile(self.path):
             with open(self.path, 'r') as fp:
                 atxt = fp.read()
-                for block in atxt.split("="):
-                    if not block.strip():
-                        continue
-                    a = block.split("\n", 1)
-                    fn = a[0]
-                    txt = a[1]
-                    temp_txt = '''
-                    <p class=text>{}</p>
-                    '''
-                    inner = temp_txt.format(txt)
-                    self.dict[fn] = inner
+
+            for block in atxt.split("="):
+                if not block.strip():
+                    continue
+                a = block.split("\n", 1)
+                fn  = a[0]
+                txt = a[1]
+                self.html[fn] = "<p>%s</p>" % txt
         else:
             for f in os.listdir(self.path):
-                ext = f.split('.')[1]
                 path = self.path + "/" + f
-                fn = f.split('.')[0]
+                
+                fn =  f.split('.')[0]
+                ext = f.split('.')[1]
                 if ext == 'txt':
                     with open(path, 'r') as fp:
                         txt = fp.read()
-
-                    temp_txt = '''
-                    <p class=text>{}</p>
-                    '''
-                    inner = temp_txt.format(txt)
+                    self.html[fn] = txt
                 elif ext == "jpg":
-                    if "_" in fn:
-                        nm = self.name + "_" + fn.split("_")[1]
-                    else:
-                        nm = self.name + "_trump"
-                    inner = gen_image(path, nm)
+                    html, css = self.gen_image(path)
+                    self.css[fn] = css
+                    self.html[fn] = html
                 else:
                     continue;
+    NN=0
+    def gen_image(self,path):
+        import base64
 
-                self.dict[fn] = inner
-                #print(path,fn)
+        data = open(path, 'rb').read() # read bytes from file
+        data_base64 = base64.b64encode(data)  # encode to base64 (bytes)
+        data_base64 = data_base64.decode()    # convert bytes to string
 
-def make_head(n, n2=None):
-    if n2 is None:
-        #major arcana
+        Column.NN += 1
+        imgid = "I" + str(Column.NN)
+        html = '<img class="card" id="' + imgid + '">'
+        css = "img#{}{{ content: url(data:image/png;base64,{}); }}".format(imgid, data_base64)
+        return html, css
+
+
+
+class suit():
+    cls = "suit"
+
+class rank():
+    cls = "rank"
+
+class court():
+    cls = "court"
+
+class Row():
+    def __init__():
+        pass
+    
+    def make_tds(self, columns):
+        temp_td = '<td class="{}">{}</td>'
+        self.tds = []
+        for s in self.select:
+            foo = "make_" + s
+            if hasattr(self, foo):
+                cls = s
+                txt = getattr(self, foo)()
+            elif self.lb in columns[s].html:
+                if columns[s].is_image:
+                    cls = s + " img"
+                else:
+                    cls = s + " txt"
+                txt = columns[s].html[self.lb]
+            else:
+                txt = "..."
+                cls = "missing"
+
+            td = temp_td.format(cls , txt)
+            self.tds.append(td)
+
+    def make_tr(self):
+        self.tr = """
+            <tr {} class="{}" id="{}">{}</tr>
+        """.format(self.attr, self.cls, self.lb, "".join(self.tds))
+
+class Card(Row):
+    select = ["head","info","img_rider","img_thoth","img_marseilles","img_fuego"]
+
+    def make_link(self):
         return """
-            <a href="#{id}">{txt}</a>
-        """.format(id = n, txt = display[n])
-    else:
-        #minor arcana
+            <li class="{}">
+                <a href="#{}"><div>
+                    <span>{}</span>
+                </div></a>
+            </li>
+        """.format(self.cls, self.lb, self.display)
+
+class CardMinor(Card):
+    cls = "card minors"
+    def __init__(self,pip, suit):
+        assert pip in pips
+        assert suit in suits
+        self.pip = pip
+        self.suit = suit
+        self.lb = pip + "_" + suit
+        self.display = display[self.pip] + " of " + display[self.suit]
+        self.index = pips.index(pip), suits.index(suit)
+        self.attr = "sortA={} sortB={}".format(
+            22 + self.index[0] + self.index[1]*14,
+            22 + self.index[1] + self.index[0]*4
+        )
+        self.cls = CardMinor.cls + " " + self.suit + " " + self.pip
+
+    def make_head(self):
         return """
             <a href="#{id}">{txt}</a>
             <br>of<br>
             <a href="#{id2}">{txt2}</a>
         """.format(
-            id = n, txt = display[n],
-            id2 = n2, txt2 = display[n2],
+            id  = self.pip,  txt = display[self.pip],
+            id2 = self.suit, txt2 = display[self.suit],
         )
 
-def generate(ls):
-    cols = []
-    for d in ls:
-        cols.append(column(d))
+class CardTrump(Card):
+    cls = "card trumps"
+    def __init__(self,lb):
+        assert lb in trumps
+        self.lb = lb
+        self.display = display[self.lb]
+        self.index = trumps.index(lb)
+        self.attr = "sortA={} sortB={}".format(
+            self.index,self.index
+        )
 
-    cols.sort(key = lambda x:x.index)
+    def make_head(self):
+        return """
+            <a href="#{}">{}</a>
+        """.format(self.lb, self.display)
 
-    def fill(l, n):
-        for c in cols:
-            if n in c.dict:
-                l.append(temp_td.format(name=c.name,inner=c.dict[n]))
-            else:
-                l.append("<td></td>")
 
-    trs = []
-    links = []
-    n = 0
+def generate():
+    columns = {}
+    for d in os.listdir("columns"):
+        col = Column(d)
+        columns[col.name] = col
+
+    r_ct = []
     for t in trumps:
-        tds = [ temp_td.format(name="head", inner=make_head(t)) ]
-        fill(tds, t)
+        r_ct.append( CardTrump(t) )
 
-        trs.append(temp_tr.format(
-            sortA = n, sortB = n, 
-            id=t, cls="trumps",inner = "\n".join(tds)))
-        links.append("""
-            <li class="trumps">
-                <a href="#{}"><div>
-                    <span>{}</span>
-                </div></a>
-            </li>""".format(t,display[t]))
-        n += 1
-
-    sn = 0
+    r_cm = []
     for s in suits:
-        pn = 0
         for p in pips:
-            name = p+"_"+s
-            tds = [ temp_td.format(name="head", inner=make_head(p,s)) ]
-            fill(tds, name)
-            trs.append(temp_tr.format(
-                sortA = n + sn*14 + pn,
-                sortB = n + pn*4 + sn,
-                id = name, cls="%s %s" % (p,s),inner = "\n".join(tds)))
-            links.append("""
-                <li class="{} {}">
-                    <a href="#{}"><div>
-                        <span>{}</span>
-                        of
-                        <span>{}</span>
-                    </div></a>
-                </li>""".format(p, s, name,display[p], display[s]))
-            pn += 1
-        sn += 1
+            r_cm.append( CardMinor(p, s) )
 
-    css_txt = {}
-    css_links = ""
+    links = ""
+    for r in r_ct + r_cm:
+        links += r.make_link()
+
+    trs = ""
+    for r in r_ct + r_cm:
+        r.make_tds(columns)
+        r.make_tr()
+        trs += r.tr
+    
+    from collections import defaultdict 
+    groups = defaultdict(list)
+    for col in columns.values():
+        for k, v in col.css.items():
+            if "_" in k:
+                suf = k.split("_")[1]
+            else:
+                suf = "trump"
+            groups[ col.name + "_" + suf ].append(v)
+
+    css_split = ""
     css_total = ""
-    for key in css_ls:
-        css_txt[key] = "\n".join(css_ls[key])
-        css_links += '<link rel="stylesheet" href="{}.css">'.format(key)
-        css_total += '<style>' + css_txt[key]+ "</style>"
+    for key in groups: #TODO sort
+        txt = "\n".join(groups[key])
 
-    total = temp_html.format(rows="\n".join(trs), links = "\n".join(links), imgs=css_total )
-    index = temp_html.format(rows="\n".join(trs), links = "\n".join(links), imgs=css_links )
+        if output_split:
+            with open('build/'+key+".css", 'w') as f:
+                f.write(txt)
+
+            css_split += '<link rel="stylesheet" href="{}.css">'.format(key)
+        if output_total:
+            css_total += "<style>{}</style>".format(txt) 
+
+    with open('template.html', 'r') as f:
+        temp_html = f.read()
+
+    if output_split:
+        index = temp_html.format(rows=trs, links = links, imgs=css_split )
+        with open('build/index.html', 'w') as f:
+            f.write(index)
+
+    if output_total:
+        total = temp_html.format(rows=trs, links = links, imgs=css_total )
 
     with open('build/total.html', 'w') as f:
         f.write(total)
-    with open('build/index.html', 'w') as f:
-        f.write(index)
-    for k, v in css_txt.items():
-        with open('build/'+k+".css", 'w') as f:
-            f.write(v)
 
-ls = os.listdir("columns")
-generate(ls)
+generate()
 
