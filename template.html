@@ -5,6 +5,17 @@
         }}
     </style>
     <script>
+        document.addEventListener("keypress", function(event) {{
+            if( event.key == "m"){{
+                cb = document.getElementById("cb1")
+                cb.click()
+            }}
+            else if( event.key == ","){{
+                cb = document.getElementById("cb2")
+                cb.click()
+            }}
+        }});
+
         document.addEventListener('readystatechange', event => {{
             // When HTML/DOM elements are ready:
             if (event.target.readyState === "interactive") {{
@@ -71,7 +82,7 @@
         }}
     </script>
     <style>
-        body {{
+        body {{ 
             margin:0;
         }}
         .content {{
@@ -170,7 +181,7 @@
         }}
 
     .img_thoth img , .img_marseilles img, .img_fuego img {{
-        box-sizing: border-box;
+        box-sizing: border-box; 
         padding: 5% 0;
     }}
 
@@ -182,8 +193,8 @@
     <body>
         <div class="content">
             <div class="topnav">
-                <span class="input"><input type="checkbox" onclick="toggle('sidenav', this)"></span>
-                <span class="input"><input type="checkbox" onclick="resort(this)"></span>
+                <span class="input"><input id="cb1" type="checkbox" onclick="toggle('sidenav', this)"></span>
+                <span class="input"><input id="cb2" type="checkbox" onclick="resort(this)"></span>
                 |
                 <span class="inner">
                 <span>

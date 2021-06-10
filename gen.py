@@ -58,9 +58,6 @@ display = {
     "cups": "Cups",
 }
 
-with open('ORDER','r') as f:
-    order = f.read().split('\n')
-
 import os, sys
 class Column():
     def __init__(self, path):
